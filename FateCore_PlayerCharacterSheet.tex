@@ -1,0 +1,274 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                       %
+% Unofficial Fate Core PC Sheet                         %
+%                                                       %
+% Author: Jean-Christophe Cubertafon - 04/23/2013       %
+%                                                       %
+% Under CC-BY License                                   %
+%                                                       %
+% Fate Core Logo is a trademark of Evil Hat Productions %
+%                                                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% use 'xelatex' to compile
+
+\documentclass[10pt]{article}
+
+\usepackage{fontspec}
+\usepackage{xunicode}
+\usepackage{xltxtra}
+
+\usepackage[papersize={6in,9in}, landscape, ignoreall]{geometry}
+\geometry{nohead, nofoot, nomarginpar, margin=.4in}
+\usepackage[svgnames,x11names]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+\definecolor{fateShade}{rgb}{0.655,0.647,0.651}
+\tikzset{every path/.append style={thick}}
+
+\defaultfontfeatures{Mapping=tex-text}
+\setromanfont{Nevis}
+
+\newlength{\baseHeight}
+\newlength{\Lscope}
+\newlength{\tinySep}
+\newlength{\bigSep}
+\newlength{\baseShift}
+\newlength{\wdBox}
+
+\makeatletter
+\newcommand{\gettikzxy}[3]{%
+  \tikz@scan@one@point\pgfutil@firstofone#1\relax
+  \edef#2{\the\pgf@x}%
+  \edef#3{\the\pgf@y}%
+}
+
+\newcommand{\getRectangle}[2]{%
+    \coordinate (N) at (#1.north);
+    \coordinate (S) at (#1.south);
+    \gettikzxy{(N)}{\nx}{\ny}
+    \gettikzxy{(S)}{\sx}{\sy}
+    \draw (0, \ny) rectangle (#2, \sy);
+}
+
+\newcommand{\chamferedBox}[5]{
+    \begin{scope}[xshift=#1, yshift=#2]
+        \fill[fill=black] (6pt, 0) -- ++(#3 - 6pt, 0) -- ++(0, 6pt - #4) -- ++(-6pt, -6pt) -- ++(6pt - #3, 0) -- ++ (0, #4 - 6pt) -- cycle;
+        \node[text=white, anchor=north west] at (3pt, 1pt) {#5};
+    \end{scope}
+}
+\makeatother
+
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{tikzpicture}
+
+% We make some computations here
+    % Compute separators height
+    \begin{scope}[on background layer]
+        \node[xshift=0.5\textwidth, yshift=-0.5\textheight, text opacity=0] (base) {\footnotesize{Character Sheet}};
+    \end{scope}
+    
+    \coordinate (N) at (base.north);
+    \coordinate (S) at (base.south);
+    \gettikzxy{(N)}{\nx}{\ny}
+    \gettikzxy{(S)}{\sx}{\sy}
+    \pgfmathparse{\ny - \sy}
+    \setlength{\baseHeight}{\pgfmathresult pt}
+    \pgfmathparse{(\textheight - 21*\baseHeight)/16}
+    \setlength{\tinySep}{\pgfmathresult pt}
+    \pgfmathparse{(\tinySep*1.5}
+    \setlength{\bigSep}{\pgfmathresult pt}
+    \pgfmathparse{\baseHeight + \tinySep}
+    \setlength{\baseShift}{\pgfmathresult pt}
+
+    \newcounter{boxCount}{1}
+
+% The layout is based on the Logo which scale is compute from US Octavo page.
+    \node[anchor=north east, scale=\textheight / 361.35] (logo) at (\textwidth, 0) {\includegraphics{FateLogo.eps}};
+
+% First Block: ID
+    \coordinate[xshift=-\bigSep] (M) at (logo.west);
+    \gettikzxy{(M)}{\mx}{\my}
+    \setlength{\Lscope}{\mx}
+    \chamferedBox{0}{0}{\Lscope}{\baseHeight}{ID}
+    % Refresh
+    \draw (\mx, -\baseShift) rectangle ++(-4 * \baseHeight + -\tinySep, -4 * \baseHeight + -\tinySep);
+    \node[text=fateShade, xshift=-4 * \baseHeight + -\tinySep, anchor=north west] (IDref) at (\mx, -\baseShift) {\footnotesize{Refresh}};
+    \coordinate[xshift=-\tinySep] (M) at (IDref.west);
+    \gettikzxy{(M)}{\mx}{\my}
+    \setlength{\Lscope}{\mx}
+    % Name
+    \node[text=fateShade, anchor=north west] (IDname) at (0, -\baseShift) {\footnotesize{Name}};
+    \getRectangle{IDname}{\Lscope}
+    % Dexcription
+    \node[text=fateShade, anchor=north west] (IDdesc) at (0, -2 * \baseShift) {\footnotesize{Description}};
+    \coordinate (M) at (IDdesc.north);
+    \gettikzxy{(M)}{\mx}{\my}
+    \draw (0, \my) rectangle ++(\Lscope, -3 * \baseHeight);
+
+% Second Block: Aspects & Skills
+    \begin{scope}[yshift=-5 * \baseHeight - 2 * \tinySep - \bigSep]
+        % Aspects
+        \begin{scope}
+            \coordinate[xshift=-\bigSep / 2] (M) at (0.33\textwidth, 0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{ASPECTS}
+            \foreach \aspT / \opac in {High Concept/1, Trouble/1, Aspect1/0, Aspect2/0, Aspect3/0} {
+                \addtocounter{boxCount}{1}
+                \node[text=fateShade, text opacity=\opac, anchor=north west] (ASPECT) at (0, -\theboxCount * \baseShift) {\footnotesize{\aspT}};
+                \getRectangle{ASPECT}{\Lscope}
+            };
+        \end{scope}
+        % Skills
+        \coordinate[xshift=\bigSep / 2] (M) at (0.33\textwidth, 0);
+        \gettikzxy{(M)}{\mx}{\my}
+        \begin{scope}[xshift=\mx]
+            \coordinate[xshift=-\mx] (M) at (\textwidth,0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \pgfmathparse{(\Lscope - 5 * \tinySep)/6}
+            \setlength{\wdBox}{\pgfmathresult pt}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{SKILLS}
+            \setcounter{boxCount}{1}
+            \newcounter{hcnt}{1}
+            \foreach \skiLab / \skiNoSh in {Superb (+5)/0, Great (+4)/1, Good (+3)/2, Fair (+2)/3, Average (+1)/4} {
+                \node[text=fateShade, anchor=north east] (lblSki) at (\wdBox, -\theboxCount * \baseShift) {\footnotesize{\skiLab}};
+                \coordinate (M) at (lblSki.south);
+                \gettikzxy{(M)}{\mx}{\my}
+                \ifnum\skiNoSh>0
+                    \foreach \x in {1,...,\skiNoSh} {
+                        \draw[xshift=\x*(\wdBox + \tinySep)] (0,-\theboxCount * \baseShift) rectangle (\wdBox, \my);
+                    };
+                \fi
+                \setcounter{hcnt}{\skiNoSh}
+                \addtocounter{hcnt}{1}
+                \foreach \x in {\thehcnt,...,5} {
+                    \draw[color=fateShade, xshift=\x*(\wdBox + \tinySep)] (0,-\theboxCount * \baseShift) rectangle (\wdBox, \my);
+                };
+                \addtocounter{boxCount}{1}
+            };
+        \end{scope}
+    \end{scope}
+
+% Third Block: Extras & Stunts
+    \begin{scope}[yshift=-11 * \baseHeight - 7 * \tinySep - 2*\bigSep]
+        % Extras
+        \begin{scope}
+            \coordinate[xshift=-\bigSep / 2] (M) at (0.5\textwidth, 0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{EXTRAS}
+            \draw (0, -\baseShift) rectangle ++(\Lscope,-5 * \baseHeight);
+        \end{scope}
+        % Stunts
+        \coordinate[xshift=\bigSep / 2] (M) at (0.5\textwidth, 0);
+        \gettikzxy{(M)}{\mx}{\my}
+        \begin{scope}[xshift=\mx]
+            \coordinate[xshift=-\mx] (M) at (\textwidth,0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{STUNTS}
+            \draw (0, -\baseShift) rectangle ++(\Lscope,-5 * \baseHeight);
+        \end{scope}
+    \end{scope}
+
+%Fourth Block: Stress & Consequences
+    \begin{scope}[yshift=-17 * \baseHeight - 8 * \tinySep - 3*\bigSep]
+        % Physical Stress
+        \begin{scope}
+            \coordinate[xshift=-\bigSep / 2] (M) at (0.3\textwidth, 0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{PHYSICAL STRESS (Physique)}
+            \setcounter{boxCount}{0}
+            \foreach \strLvl in {1, 2} {
+                \node[xshift=\tinySep, yshift=-\tinySep/2, anchor=mid] at (\theboxCount*0.2\Lscope, -\baseShift) {\strLvl};
+                \node[opacity=0, anchor=north west, xshift=\tinySep] (CONSEQ) at (\theboxCount*0.2\Lscope, -\baseShift) {\footnotesize{x}};
+                \coordinate (N) at (CONSEQ.north);
+                \coordinate (S) at (CONSEQ.south);
+                \gettikzxy{(N)}{\nx}{\ny}
+                \gettikzxy{(S)}{\sx}{\sy}
+                \draw[xshift=\theboxCount*0.2\Lscope] (\tinySep, \ny) rectangle (\tinySep+\ny-\sy, \sy);
+                \addtocounter{boxCount}{1}
+            };
+            \foreach \strLvl in {3, 4} {
+                \node[text=fateShade, xshift=\tinySep, yshift=-\tinySep/2, anchor=mid] at (\theboxCount*0.2\Lscope, -\baseShift) {\strLvl};
+                \node[opacity=0, anchor=north west, xshift=\tinySep] (CONSEQ) at (\theboxCount*0.2\Lscope, -\baseShift) {\footnotesize{x}};
+                \coordinate (N) at (CONSEQ.north);
+                \coordinate (S) at (CONSEQ.south);
+                \gettikzxy{(N)}{\nx}{\ny}
+                \gettikzxy{(S)}{\sx}{\sy}
+                \draw[color=fateShade, xshift=\theboxCount*0.2\Lscope] (\tinySep, \ny) rectangle (\tinySep+\ny-\sy, \sy);
+                \addtocounter{boxCount}{1}
+            };
+        \end{scope}
+        % Mental Stress
+        \begin{scope}[yshift=-2 * \baseHeight - 2 * \tinySep]
+            \coordinate[xshift=-\bigSep / 2] (M) at (0.3\textwidth, 0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{MENTAL STRESS (Will)}
+            \setcounter{boxCount}{0}
+            \foreach \strLvl in {1, 2} {
+                \node[xshift=\tinySep, yshift=-\tinySep/2, anchor=mid] at (\theboxCount*0.2\Lscope, -\baseShift) {\strLvl};
+                \node[opacity=0, anchor=north west, xshift=\tinySep] (CONSEQ) at (\theboxCount*0.2\Lscope, -\baseShift) {\footnotesize{x}};
+                \coordinate (N) at (CONSEQ.north);
+                \coordinate (S) at (CONSEQ.south);
+                \gettikzxy{(N)}{\nx}{\ny}
+                \gettikzxy{(S)}{\sx}{\sy}
+                \draw[xshift=\theboxCount*0.2\Lscope] (\tinySep, \ny) rectangle (\tinySep+\ny-\sy, \sy);
+                \addtocounter{boxCount}{1}
+            };
+            \foreach \strLvl in {3, 4} {
+                \node[text=fateShade, xshift=\tinySep, yshift=-\tinySep/2, anchor=mid] at (\theboxCount*0.2\Lscope, -\baseShift) {\strLvl};
+                \node[opacity=0, anchor=north west, xshift=\tinySep] (CONSEQ) at (\theboxCount*0.2\Lscope, -\baseShift) {\footnotesize{x}};
+                \coordinate (N) at (CONSEQ.north);
+                \coordinate (S) at (CONSEQ.south);
+                \gettikzxy{(N)}{\nx}{\ny}
+                \gettikzxy{(S)}{\sx}{\sy}
+                \draw[color=fateShade, xshift=\theboxCount*0.2\Lscope] (\tinySep, \ny) rectangle (\tinySep+\ny-\sy, \sy);
+                \addtocounter{boxCount}{1}
+            };
+        \end{scope}
+        % Consequences
+        \coordinate[xshift=\bigSep / 2] (M) at (0.3\textwidth, 0);
+        \gettikzxy{(M)}{\mx}{\my}
+        \begin{scope}[xshift=\mx]
+            \coordinate[xshift=-\mx] (M) at (\textwidth,0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\Lscope}{\mx}
+            \chamferedBox{0}{0}{\Lscope}{\baseHeight}{CONSEQUENCES}
+            \coordinate[xshift=-\tinySep / 2] (M) at (0.5\Lscope, 0);
+            \gettikzxy{(M)}{\mx}{\my}
+            \setlength{\wdBox}{\mx}
+            \setcounter{boxCount}{1}
+            \foreach \consLab / \consMal in {Mild/2, Moderate/4, Severe/6} {
+                \node[xshift=\tinySep/2, yshift=-\tinySep/2, anchor=mid] at (0, -\theboxCount * \baseShift) {\consMal};
+                \node[text=fateShade, anchor=north west, xshift=\tinySep] (CONSEQ) at (0, -\theboxCount * \baseShift) {\footnotesize{\consLab}};
+                \coordinate (N) at (CONSEQ.north);
+                \coordinate (S) at (CONSEQ.south);
+                \gettikzxy{(N)}{\nx}{\ny}
+                \gettikzxy{(S)}{\sx}{\sy}
+                \draw (\tinySep/2, \ny) rectangle (\wdBox - \tinySep/2, \sy);
+                \addtocounter{boxCount}{1}
+            };
+            \node[xshift=\tinySep/2, yshift=-\tinySep/2, anchor=mid, text=fateShade] at (0.5\Lscope + \tinySep, -\baseShift) {2};
+            \node[text=fateShade, anchor=north west, xshift=\tinySep] (CONSEQ) at (0.5\Lscope + \tinySep, -\baseShift) {\footnotesize{Mild}};
+            \coordinate (N) at (CONSEQ.north);
+            \coordinate (S) at (CONSEQ.south);
+            \gettikzxy{(N)}{\nx}{\ny}
+            \gettikzxy{(S)}{\sx}{\sy}
+            \draw[color=fateShade] (0.5\Lscope + \tinySep + \tinySep/2, \ny) rectangle (0.5\Lscope + \tinySep + \wdBox - \tinySep/2, \sy);
+        \end{scope}
+    \end{scope}
+\end{tikzpicture}
+
+\end{document}
